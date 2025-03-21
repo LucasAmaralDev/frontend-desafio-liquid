@@ -1,54 +1,110 @@
-# React + TypeScript + Vite
+# Frontend Vite Desafio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este projeto foi desenvolvido com React, TypeScript e Vite.
 
-Currently, two official plugins are available:
+## Pré-requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Antes de começar, certifique-se de ter instalado:
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (v18 ou superior recomendado)
+- npm (geralmente vem com o Node.js) ou [yarn](https://yarnpkg.com/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Instalação
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+Siga estas etapas para configurar o ambiente de desenvolvimento:
+
+1. Clone o repositório:
+   ```bash
+   git clone [URL_DO_REPOSITÓRIO]
+   cd frontend-vite-desafio
+   ```
+
+2. Instale as dependências:
+   ```bash
+   npm install
+   # ou
+   yarn install
+   ```
+
+## Executando o projeto
+
+### Ambiente de desenvolvimento
+
+Para iniciar o servidor de desenvolvimento na porta 4800:
+
+```bash
+npm run dev
+# ou
+yarn dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Acesse o aplicativo em seu navegador: `http://localhost:4800`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Produção
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+Para construir o projeto para produção:
+
+```bash
+npm run build
+# ou
+yarn build
 ```
+
+Para pré-visualizar a versão de produção:
+
+```bash
+npm run preview
+# ou
+yarn preview
+```
+
+Para iniciar o servidor em modo de produção:
+
+```bash
+npm start
+# ou
+yarn start
+```
+
+## Scripts disponíveis
+
+- `dev`: Inicia o servidor de desenvolvimento na porta 4800
+- `build`: Compila o TypeScript e constrói o projeto para produção
+- `lint`: Executa o ESLint para verificar o código
+- `preview`: Pré-visualiza a versão de produção
+- `start`: Inicia o servidor em modo de produção na porta 4800
+
+## Tecnologias principais
+
+- React 19
+- TypeScript
+- Vite 6
+- React Router v7
+- Tailwind CSS v4
+- Axios
+- Leaflet (para mapas)
+
+## Estrutura do projeto
+
+```
+frontend-vite-desafio/
+├── src/                    # Código fonte
+│   ├── assets/             # Arquivos estáticos (imagens, etc.)
+│   ├── Components/         # Componentes React reutilizáveis
+│   ├── Pages/              # Páginas/Rotas da aplicação
+│   ├── Services/           # Serviços e APIs
+│   ├── index.css           # Estilos globais
+│   ├── main.tsx            # Ponto de entrada
+│   └── vite-env.d.ts       # Tipos para o ambiente Vite
+├── public/                 # Arquivos públicos
+├── dist/                   # Arquivos de build (gerados)
+├── index.html              # Template HTML
+├── package.json            # Dependências e scripts
+├── tsconfig.json           # Configuração do TypeScript
+├── vite.config.ts          # Configuração do Vite
+└── README.md               # Este arquivo
+```
+
+## Suporte
+
+Para dúvidas ou problemas, abra uma issue no repositório do projeto.
