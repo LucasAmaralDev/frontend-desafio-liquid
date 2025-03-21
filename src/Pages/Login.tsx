@@ -16,6 +16,7 @@ export default function Login() {
         if (response.status === 200) {
             localStorage.setItem('accessToken', (response.data as any).authToken);
             alert((response.data as any).message)
+            window.location.href = '/dashboard';
         }
     };
 

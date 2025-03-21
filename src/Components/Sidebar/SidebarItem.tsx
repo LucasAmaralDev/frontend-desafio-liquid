@@ -1,10 +1,16 @@
-export const SidebarItem = ({ icon, text, active = false }: {
+export const SidebarItem = ({ icon, text, active = false, link="#", logout = false }: {
     icon: React.ReactNode,
     text: string,
     active?: boolean,
+    link?: string,
+    logout?: boolean,
 }) => (
   <a
-    href="#"
+    href={link}
+    onClick={() => {
+        logout && window.localStorage.removeItem('token') ;
+        (window.location.href = '/') 
+    }}
     className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
       active
         ? 'bg-gray-100 text-gray-900'
