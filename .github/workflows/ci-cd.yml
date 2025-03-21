@@ -30,16 +30,33 @@ jobs:
           name: build
           path: dist/
 
+      - name: Arquiva package.json para deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-files
+          path: |
+            package.json
+            package-lock.json
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      - name: Clona o repositório
+        uses: actions/checkout@v4
+
       - name: Baixa o build
         uses: actions/download-artifact@v4
         with:
           name: build
           path: dist/
+
+      - name: Baixa package.json
+        uses: actions/download-artifact@v4
+        with:
+          name: package-files
+          path: ./
 
       - name: Sobe o código para a VPS
         env:
@@ -55,6 +72,37 @@ jobs:
 
           # Envia os arquivos de build para a VPS
           rsync -avz --delete dist/ $VPS_USER@$VPS_HOST:$APP_PATH/dist/
+          
+          # Envia package.json e package-lock.json
+          rsync -avz package*.json $VPS_USER@$VPS_HOST:$APP_PATH/
+
+          # Criar um script de servidor simples para servir os arquivos estáticos
+          cat > server.js << 'EOL'
+          import express from 'express';
+          import path from 'path';
+          import { fileURLToPath } from 'url';
+          
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          
+          const app = express();
+          
+          // Servir arquivos estáticos da pasta dist
+          app.use(express.static(path.join(__dirname, 'dist')));
+          
+          // Para qualquer rota, enviar o index.html (para SPA)
+          app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+          });
+          
+          const PORT = process.env.PORT || 4800;
+          app.listen(PORT, () => {
+            console.log(`Servidor rodando na porta ${PORT}`);
+          });
+          EOL
+          
+          # Enviar o script do servidor
+          rsync -avz server.js $VPS_USER@$VPS_HOST:$APP_PATH/
 
           # Conecta na VPS e faz o deploy
           ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
@@ -91,33 +139,46 @@ jobs:
               echo "PM2 encontrado: \$(pm2 --version)"
             fi
             
-            # Faz backup da versão atual antes de atualizar
-            if [ -d "dist_current" ]; then
-              mv dist_current dist_backup_\$(date +%Y%m%d_%H%M%S)
-            fi
+            # Instala o Express para o servidor
+            npm install express --save
             
-            # Cria/move para diretório correto
-            mkdir -p dist_current
-            cp -r dist/* dist_current/
+            # Configurar direitos de propriedade se necessário
+            sudo chown -R \$(whoami):\$(whoami) .
             
-            # Instala pacotes de servidor se necessário
+            # Configurar script de start no package.json para modo de produção
             if [ -f "package.json" ]; then
-              npm install --omit=dev
+              # Verifica e corrige o package.json para não ter argumentos indesejados
+              echo "Ajustando package.json para o servidor..."
+              # Substitui qualquer script de start com vite por node server.js
+              sed -i 's/"start": "vite.*"/"start": "node server.js"/g' package.json
+              
+              # Instala dependências necessárias
+              echo "Instalando dependências do Express..."
+              npm install express --production
             fi
             
             # Configura e inicia a aplicação com PM2
             if pm2 list | grep -q "app"; then
-              echo "Reiniciando aplicação com PM2..."
-              pm2 restart app
+              echo "Parando aplicação atual..."
+              pm2 stop app
+              pm2 delete app
+              echo "Iniciando aplicação com PM2..."
+              pm2 start server.js --name app
             else
               echo "Iniciando aplicação com PM2 pela primeira vez..."
-              pm2 start npm --name app -- start
+              # Inicia diretamente o servidor Node.js
+              pm2 start server.js --name app
             fi
             
             # Verifica se a aplicação está rodando
             sleep 5
             if pm2 list | grep -q "app.*online"; then
               echo "Deploy concluído com sucesso!"
+              # Verifica se o servidor está respondendo
+              if command -v curl &> /dev/null; then
+                echo "Verificando resposta do servidor..."
+                curl -I http://localhost:4800 || echo "Servidor não está respondendo, mas PM2 mostra que está online"
+              fi
               # Salva configuração do PM2 para reiniciar após boot
               pm2 save
               # Configura PM2 para iniciar no boot se ainda não estiver configurado
