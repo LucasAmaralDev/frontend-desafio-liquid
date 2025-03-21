@@ -1,8 +1,8 @@
 import axios, { AxiosPromise } from "axios";
 
 // Configuração da URL base da API
-//const API_BASE_URL = "https://inr8qm2bj0.execute-api.us-east-1.amazonaws.com/dev/"; // Altere para sua URL base real
-const API_BASE_URL = "http://localhost:3000/dev/"; // Altere para sua URL base real
+const API_BASE_URL = "https://inr8qm2bj0.execute-api.us-east-1.amazonaws.com/dev/";
+//const API_BASE_URL = "http://localhost:3000/dev/"; // local
 
 const getJwtToken = () => {
   if (typeof window !== "undefined") {
