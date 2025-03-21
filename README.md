@@ -108,3 +108,31 @@ frontend-vite-desafio/
 ## Suporte
 
 Para dúvidas ou problemas, abra uma issue no repositório do projeto.
+
+## Capturas de Tela
+
+Abaixo estão as capturas de tela das principais telas do aplicativo:
+
+### Tela de Login
+![Tela de Login](./images/login.png)
+
+### Tela de Registro
+![Tela de Registro](./images/registro.png)
+
+### Dashboard
+![Dashboard](./images/dashboard.png)
+
+### Propostas
+![Lista de Propostas](./images/propostas.png)
+
+### Usuários
+![Gestão de Usuários](./images/usuarios.png)
+
+### Relatórios
+![Relatório - Visão Geral](./images/relatorio1.png)
+![Relatório - Detalhes](./images/relatorio2.png)
+![Relatório - Gráficos](./images/relatorio3.png)
+![Relatório - Comparativo](./images/relatorio4.png)
+![Relatório - Estatísticas](./images/relatorio5.png)
+![Relatório - Tendências](./images/relatorio6.png)
+
