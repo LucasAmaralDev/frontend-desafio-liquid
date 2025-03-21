@@ -11,7 +11,7 @@ const Dashboard = () => {
 
     const getActivityItems = async () => {
 
-        const response: any = await get('http://localhost:3000/dev/atividades')
+        const response: any = await get('atividades')
         console.log(response.data);
         setActivityItems(response.data.atividades);
     }

@@ -29,7 +29,7 @@ const LocationInfoMap = () => {
     const fetchpopupdata = async (lat: number, lng: number) => {
         setMapLoading(true);
         try {
-            const response: any = await get(`http://localhost:3000/dev/getLocationInfo?latitude=${lat.toFixed(6)}&longitude=${lng.toFixed(6)}`)
+            const response: any = await get(`getLocationInfo?latitude=${lat.toFixed(6)}&longitude=${lng.toFixed(6)}`)
             return response.data;
         } finally {
             setMapLoading(false);

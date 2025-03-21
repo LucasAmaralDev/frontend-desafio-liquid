@@ -10,7 +10,7 @@ const Users = () => {
 
     const getUsers = async () => {
 
-        const response: any = await get('http://localhost:3000/dev/users')
+        const response: any = await get('users')
         console.log(response.data);
         setUsers(response.data.users);
     }

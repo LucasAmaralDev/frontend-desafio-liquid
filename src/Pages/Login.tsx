@@ -4,19 +4,28 @@ import { post } from '../Services/ApiUtils';
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async(e:any) => {
         e.preventDefault();
+        setLoading(true);
+        setError('');
 
-        const response = await post('https://inr8qm2bj0.execute-api.us-east-1.amazonaws.com/dev/login', {
-            email,
-            password
-        })
+        try {
+            const response = await post('login', {
+                email,
+                password
+            });
 
-        if (response.status === 200) {
-            localStorage.setItem('accessToken', (response.data as any).authToken);
-            alert((response.data as any).message)
-            window.location.href = '/dashboard';
+            if (response.status === 200) {
+                localStorage.setItem('accessToken', (response.data as any).authToken);
+                window.location.href = '/dashboard';
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Falha ao realizar login. Verifique suas credenciais.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -48,11 +57,20 @@ export default function Login() {
                         />
                     </div>
 
+                    {error && (
+                        <div className="mb-4 p-2 text-sm text-red-600 bg-red-100 rounded">
+                            {error}
+                        </div>
+                    )}
+
                     <button
                         type="submit"
-                        className="w-full py-3 text-white transition-colors duration-300 bg-gradient-to-r from-blue-500 to-purple-600 rounded hover:opacity-90"
+                        disabled={loading}
+                        className={`w-full py-3 text-white transition-colors duration-300 bg-gradient-to-r from-blue-500 to-purple-600 rounded ${
+                            loading ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
+                        }`}
                     >
-                        Entrar
+                        {loading ? 'Processando...' : 'Entrar'}
                     </button>
                 </form>
 

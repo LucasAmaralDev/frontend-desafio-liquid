@@ -1,5 +1,8 @@
 import axios, { AxiosPromise } from "axios";
 
+// Configuração da URL base da API
+const API_BASE_URL = "https://inr8qm2bj0.execute-api.us-east-1.amazonaws.com/dev/"; // Altere para sua URL base real
+
 const getJwtToken = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("accessToken");
@@ -9,21 +12,26 @@ const getJwtToken = () => {
 };
 
 export const get = <T>(
-  url: string,
+  endpoint: string,
   options?: { headers?: { [key: string]: string }; params?: { [key: string]: boolean | number | string } }
 ): AxiosPromise<T> => {
   const jwtToken = getJwtToken();
+  const url = `${API_BASE_URL}${endpoint}`;
 
   return axios({
-    headers: { Authorization: `Bearer ${jwtToken}` },
+    headers: { 
+      Authorization: `Bearer ${jwtToken}`,
+      ...options?.headers
+    },
     method: "GET",
     params: options?.params || {},
     url,
   });
 };
 
-export const post = <T>(url: string, data: { [key: string]: unknown }): AxiosPromise<T> => {
+export const post = <T>(endpoint: string, data: { [key: string]: unknown }): AxiosPromise<T> => {
   const jwtToken = getJwtToken();
+  const url = `${API_BASE_URL}${endpoint}`;
 
   return axios({
     data,
@@ -34,10 +42,11 @@ export const post = <T>(url: string, data: { [key: string]: unknown }): AxiosPro
 };
 
 export const put = <T>(
-  url: string,
+  endpoint: string,
   data: Array<{ [key: string]: unknown }> | { [key: string]: unknown } | null
 ): AxiosPromise<T> => {
   const jwtToken = getJwtToken();
+  const url = `${API_BASE_URL}${endpoint}`;
 
   return axios({
     data,
@@ -47,8 +56,9 @@ export const put = <T>(
   });
 };
 
-export const deleteAxios = (url: string, data?: { [key: string]: unknown }) => {
+export const deleteAxios = <T>(endpoint: string, data?: { [key: string]: unknown }): AxiosPromise<T> => {
   const jwtToken = getJwtToken();
+  const url = `${API_BASE_URL}${endpoint}`;
 
   return axios({
     data,
