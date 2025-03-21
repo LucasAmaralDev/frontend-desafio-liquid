@@ -21,7 +21,6 @@ jobs:
       - name: Instala as dependências
         run: npm install
 
-
       - name: Faz build
         run: npm run build
 
@@ -52,11 +51,21 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
-          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << 'EOF'
+          # Primeiro, envia os arquivos de build para a VPS
+          rsync -avz --delete dist/ $VPS_USER@$VPS_HOST:$APP_PATH/dist/
+
+          # Conecta na VPS e faz o deploy
+          ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
             cd $APP_PATH
+
+            # Puxa as mudanças do git
             git pull origin master
+
+            # Instala apenas pacotes de produção (se mudar algo no package.json)
             npm install --production
-            npm run build
+
+            # Reinicia o app com PM2 (ou sobe se não estiver rodando)
             pm2 restart app || pm2 start npm --name app -- start
           EOF
