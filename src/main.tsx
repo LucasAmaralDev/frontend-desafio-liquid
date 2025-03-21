@@ -7,7 +7,7 @@ import Register from './Pages/Register'
 import Relatorios from './Pages/Relatorios'
 import Teste from './Pages/Teste'
 import Users from './Pages/Users'
-
+import Propostas from './Pages/Propostas'
 
 
 
@@ -27,7 +27,7 @@ const App = () => {
           <Route path="/teste" element={<Teste />} />
           <Route path="/users" element={<Users />} />
           <Route path="/relatorios" element={<Relatorios />} />
-          
+          <Route path="/propostas" element={<Propostas />} />
         </Routes>
       </div>
     </Router>

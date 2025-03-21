@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from 'react-leaflet';
 import { InfoCard } from '../InfoCard';
 import { get } from '../../Services/ApiUtils';
+import ModalProposta from '../ModalProposta';
 
 // Corrigindo o problema dos ícones do Leaflet no React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -46,7 +47,7 @@ const LocationInfoMap = () => {
             const simulatedData = {
                 id: maker.locationData.id,
                 city: maker.locationData.bairro || "Bairro Simulado",
-                state: maker.locationData.regiao || "Cidade Simulada",
+                state: maker.locationData.cidade || "Cidade Simulada",
                 population: maker.locationData.populacaoCidade,
                 valorMetroQuadrado: maker.locationData.temperaturaMediana, // Valor do m² entre 3000 e 8000
                 climate: maker.locationData.clima,
@@ -62,7 +63,8 @@ const LocationInfoMap = () => {
                 },
                 indiceValorizacao: maker.locationData.valorizacaoMedia, // Valorização anual entre 5% e 15%
                 distanciaCentro: maker.locationData.distanciaAoCentro, // Distância do centro em km
-                iptu: maker.locationData.iptuMedia // IPTU entre 0.5% e 1% do valor
+                iptu: maker.locationData.iptuMedia, // IPTU entre 0.5% e 1% do valor
+                allData: maker.locationData
             };
 
             setLocationData(simulatedData);
@@ -339,17 +341,7 @@ const LocationInfoMap = () => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-6">
-                                <button
-                                    onClick={() => {
-                                        alert('Gerando relatório PDF para essa região...');
-                                    }}
-                                    className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Gerar PDF
-                                </button>
+                                <ModalProposta locationData={locationData} />
 
                                 <button
                                     onClick={() => {

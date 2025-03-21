@@ -1,4 +1,4 @@
-import { FileText, Home, LogOut, Users } from "lucide-react";
+import { BarChart2, FileText, Home, LogOut, Users } from "lucide-react";
 import { SidebarItem } from "./SidebarItem";
 
 export const SidebarMenu = () => {
@@ -9,8 +9,7 @@ export const SidebarMenu = () => {
       <SidebarItem icon={<Home size={20} />} text="Inicio" active={rotaAtiva == "dashboard"} link='/dashboard' />
       <SidebarItem icon={<Users size={20} />} text="Usuários" active={rotaAtiva == "users"} link='/users' />
       <SidebarItem icon={<FileText size={20} />} text="Relatórios" link='/relatorios' />
-      {/* <SidebarItem icon={<BarChart2 size={20} />} text="Análises" link='/users' /> */}
-      {/* <SidebarItem icon={<Settings size={20} />} text="Configurações" link='/users' /> */}
+      <SidebarItem icon={<BarChart2 size={20} />} text="Propostas" active={rotaAtiva == "propostas"} link='/propostas' />
       <SidebarItem icon={<LogOut size={20} />} text="Sair" logout />
     </div>
   )
