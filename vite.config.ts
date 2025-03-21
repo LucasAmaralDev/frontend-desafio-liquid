@@ -9,6 +9,8 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    port: 4800
-  }
+    host: '0.0.0.0', // Permite acesso externo
+    port: 4800,      // Porta do servidor
+    allowedHosts: ['.'], // Permite qualquer domínio 
+  },
 })
