@@ -60,42 +60,70 @@ jobs:
           ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
             cd $APP_PATH
             
-            # Carrega o ambiente do usuário
-            export NVM_DIR="\$HOME/.nvm"
-            [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+            # Verifica se o Node.js está instalado
+            if ! command -v node &> /dev/null; then
+              echo "Node.js não encontrado, instalando..."
+              # Adiciona repositório NodeSource para Node.js 20
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
             
-            # Carrega o PATH completo
-            export PATH="\$HOME/.npm/bin:\$HOME/.npm-global/bin:\$HOME/node_modules/.bin:\$PATH"
-            
-            # Verifica onde o npm está instalado
-            which npm
-            
-            # Puxa as mudanças do git
-            git pull origin master
-
-            # Instala apenas pacotes de produção
-            npm install --production
-
-            # Localiza o PM2 e o usa
-            PM2_PATH=\$(which pm2 || echo "\$HOME/.npm-global/bin/pm2")
-            
-            if [ -x "\$PM2_PATH" ]; then
-              echo "Usando PM2 em \$PM2_PATH"
-              \$PM2_PATH restart app || \$PM2_PATH start npm --name app -- start
+            # Verifica novamente se o Node.js foi instalado corretamente
+            if command -v node &> /dev/null; then
+              echo "Node.js instalado: \$(node -v)"
+              echo "NPM instalado: \$(npm -v)"
             else
-              echo "PM2 não encontrado. Tentando encontrar em locais comuns..."
-              
-              # Tenta locais comuns de instalação do PM2
-              for path in "\$HOME/.npm/bin/pm2" "\$HOME/.npm-global/bin/pm2" "/usr/local/bin/pm2" "\$HOME/node_modules/.bin/pm2"; do
-                if [ -x "\$path" ]; then
-                  echo "Encontrado PM2 em \$path"
-                  \$path restart app || \$path start npm --name app -- start
-                  exit 0
-                fi
-              done
-              
-              echo "PM2 não encontrado. Tentando instalá-lo globalmente..."
-              npm install -g pm2
-              pm2 restart app || pm2 start npm --name app -- start
+              echo "ERRO: Falha na instalação do Node.js"
+              exit 1
+            fi
+            
+            # Verifica se o PM2 está instalado
+            if ! command -v pm2 &> /dev/null; then
+              echo "PM2 não encontrado, instalando..."
+              sudo npm install -g pm2
+            fi
+            
+            # Verifica novamente se o PM2 foi instalado corretamente
+            if ! command -v pm2 &> /dev/null; then
+              echo "ERRO: Falha na instalação do PM2"
+              exit 1
+            else
+              echo "PM2 encontrado: \$(pm2 --version)"
+            fi
+            
+            # Faz backup da versão atual antes de atualizar
+            if [ -d "dist_current" ]; then
+              mv dist_current dist_backup_\$(date +%Y%m%d_%H%M%S)
+            fi
+            
+            # Cria/move para diretório correto
+            mkdir -p dist_current
+            cp -r dist/* dist_current/
+            
+            # Instala pacotes de servidor se necessário
+            if [ -f "package.json" ]; then
+              npm install --omit=dev
+            fi
+            
+            # Configura e inicia a aplicação com PM2
+            if pm2 list | grep -q "app"; then
+              echo "Reiniciando aplicação com PM2..."
+              pm2 restart app
+            else
+              echo "Iniciando aplicação com PM2 pela primeira vez..."
+              pm2 start npm --name app -- start
+            fi
+            
+            # Verifica se a aplicação está rodando
+            sleep 5
+            if pm2 list | grep -q "app.*online"; then
+              echo "Deploy concluído com sucesso!"
+              # Salva configuração do PM2 para reiniciar após boot
+              pm2 save
+              # Configura PM2 para iniciar no boot se ainda não estiver configurado
+              pm2 startup | tail -n 1 | bash || true
+            else
+              echo "ERRO: A aplicação não está rodando corretamente!"
+              exit 1
             fi
           EOF
