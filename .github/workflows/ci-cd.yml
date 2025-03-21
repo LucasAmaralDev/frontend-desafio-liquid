@@ -53,19 +53,49 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
-          # Primeiro, envia os arquivos de build para a VPS
+          # Envia os arquivos de build para a VPS
           rsync -avz --delete dist/ $VPS_USER@$VPS_HOST:$APP_PATH/dist/
 
           # Conecta na VPS e faz o deploy
           ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << EOF
             cd $APP_PATH
-
+            
+            # Carrega o ambiente do usuário
+            export NVM_DIR="\$HOME/.nvm"
+            [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+            
+            # Carrega o PATH completo
+            export PATH="\$HOME/.npm/bin:\$HOME/.npm-global/bin:\$HOME/node_modules/.bin:\$PATH"
+            
+            # Verifica onde o npm está instalado
+            which npm
+            
             # Puxa as mudanças do git
             git pull origin master
 
-            # Instala apenas pacotes de produção (se mudar algo no package.json)
+            # Instala apenas pacotes de produção
             npm install --production
 
-            # Reinicia o app com PM2 (ou sobe se não estiver rodando)
-            pm2 restart app || pm2 start npm --name app -- start
+            # Localiza o PM2 e o usa
+            PM2_PATH=\$(which pm2 || echo "\$HOME/.npm-global/bin/pm2")
+            
+            if [ -x "\$PM2_PATH" ]; then
+              echo "Usando PM2 em \$PM2_PATH"
+              \$PM2_PATH restart app || \$PM2_PATH start npm --name app -- start
+            else
+              echo "PM2 não encontrado. Tentando encontrar em locais comuns..."
+              
+              # Tenta locais comuns de instalação do PM2
+              for path in "\$HOME/.npm/bin/pm2" "\$HOME/.npm-global/bin/pm2" "/usr/local/bin/pm2" "\$HOME/node_modules/.bin/pm2"; do
+                if [ -x "\$path" ]; then
+                  echo "Encontrado PM2 em \$path"
+                  \$path restart app || \$path start npm --name app -- start
+                  exit 0
+                fi
+              done
+              
+              echo "PM2 não encontrado. Tentando instalá-lo globalmente..."
+              npm install -g pm2
+              pm2 restart app || pm2 start npm --name app -- start
+            fi
           EOF
