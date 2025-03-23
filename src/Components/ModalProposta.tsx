@@ -45,6 +45,7 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
     const [showModal, setShowModal] = useState(false);
     const [alertaVisivel, setAlertaVisivel] = useState(false);
     const [mensagemAlerta, setMensagemAlerta] = useState('');
+    const [enviandoFormulario, setEnviandoFormulario] = useState(false);
 
     const [formData, setFormData] = useState({
         nome: '',
@@ -178,6 +179,9 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
             return;
         }
 
+        // Ativar o estado de envio para bloquear o botão
+        setEnviandoFormulario(true);
+
         const proposta = {
             imovelId: allData.id,
             cliente: {
@@ -202,22 +206,30 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
 
         console.log("Proposta: ", proposta);
 
-        const response = await post("createProposta", { proposta });
-        console.log("Resposta: ", response);
-        if (response.status === 200) {
-            mostrarAlerta("Proposta enviada com sucesso! Acompanhe o status na aba de propostas.");
-            setShowModal(false);
-            setFormData({
-                nome: '',
-                cpf: '',
-                email: '',
-                telefone: '',
-                renda: '',
-                entrada: '',
-                prazo: '',
-            })
-        } else {
+        try {
+            const response = await post("createProposta", { proposta });
+            console.log("Resposta: ", response);
+            if (response.status === 200) {
+                mostrarAlerta("Proposta enviada com sucesso! Acompanhe o status na aba de propostas.");
+                setShowModal(false);
+                setFormData({
+                    nome: '',
+                    cpf: '',
+                    email: '',
+                    telefone: '',
+                    renda: '',
+                    entrada: '',
+                    prazo: '',
+                });
+            } else {
+                mostrarAlerta("Erro ao enviar proposta. Por favor, tente novamente.");
+            }
+        } catch (error) {
+            console.error("Erro ao enviar proposta:", error);
             mostrarAlerta("Erro ao enviar proposta. Por favor, tente novamente.");
+        } finally {
+            // Desativar o estado de envio independentemente do resultado
+            setEnviandoFormulario(false);
         }
     }
 
@@ -384,10 +396,23 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
                                         <div className="mt-6 flex justify-end">
                                             <button
                                                 type="submit"
-                                                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                                className={`px-6 py-2 rounded transition-colors ${
+                                                    enviandoFormulario 
+                                                    ? "bg-gray-400 cursor-not-allowed" 
+                                                    : "bg-green-600 hover:bg-green-700 text-white"
+                                                }`}
                                                 onClick={handleSubmit}
+                                                disabled={enviandoFormulario}
                                             >
-                                                Solicitar
+                                                {enviandoFormulario ? (
+                                                    <div className="flex items-center">
+                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Enviando...
+                                                    </div>
+                                                ) : "Solicitar"}
                                             </button>
                                         </div>
                                     </form>
