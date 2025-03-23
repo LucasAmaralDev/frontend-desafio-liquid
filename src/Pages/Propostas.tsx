@@ -3,16 +3,18 @@ import { useEffect, useState } from 'react';
 import { SidebarMenu } from '../Components/Sidebar/SidebarMenu';
 import { get, put } from '../Services/ApiUtils';
 import { PropostaItem } from '../Components/PropostaItem';
+import { IProposta } from '../interfaces/IProposta';
 
 const Propostas = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [propostas, setPropostas] = useState([])
+    const [propostas, setPropostas] = useState<IProposta[]>([]);
+    const [carregando, setCarregando] = useState(false);
 
     const getPropostas = async () => {
-
         const response: any = await get('getPropostas')
-        console.log(response.data);
-        setPropostas(response.data.propostas);
+        const propostas: IProposta[] = response.data.propostas;
+        const propostasOrdenadas: IProposta[] = propostas.sort((a, b) => b.timestamp - a.timestamp);
+        setPropostas(propostasOrdenadas);
     }
 
     const toggleSidebar = () => {
@@ -20,8 +22,20 @@ const Propostas = () => {
     };
 
     const updateProposta = async (id: string, status: string) => {
-        const response: any = await put(`updateStatusProposta?id=${id}&status=${status}`, {})
-        console.log(response.data);
+        try {
+            // Ativa o estado de carregamento para bloquear a interface
+            setCarregando(true);
+            
+            const response: any = await put(`updateStatusProposta?id=${id}&status=${status}`, {})
+            
+            // Atualiza a lista de propostas após a atualização
+            await getPropostas();
+        } catch (error) {
+            console.error("Erro ao atualizar proposta:", error);
+        } finally {
+            // Libera a interface independente do resultado
+            setCarregando(false);
+        }
     }
 
     useEffect(() => {
@@ -92,7 +106,7 @@ const Propostas = () => {
                             {
                                 propostas.length > 0
                                 ? propostas.map((proposta: any) => {
-                                    return <PropostaItem proposta={proposta} updateProposta={updateProposta} />
+                                    return <PropostaItem key={proposta.id} proposta={proposta} updateProposta={updateProposta} />
                                 })
                                 : null
                             }
@@ -100,6 +114,18 @@ const Propostas = () => {
                         </div>
                     </div>
                 </main>
+
+                {carregando && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50" style={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+                    }}>
+                        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-4"></div>
+                            <p className="text-gray-700 font-medium text-lg">Atualizando proposta...</p>
+                            <p className="text-gray-500 text-sm mt-2">Aguarde enquanto processamos sua solicitação</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -87,7 +87,6 @@ const LocationInfoMap = () => {
                 // };
 
                 const locationData = await fetchpopupdata(e.latlng.lat, e.latlng.lng);
-                console.log("locationData:", locationData);
                 const itens = 5;
 
                 const locations = []

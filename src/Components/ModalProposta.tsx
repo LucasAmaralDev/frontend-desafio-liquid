@@ -65,7 +65,6 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
 
     const handleOpenModal = () => {
         setShowModal(true);
-        console.log(allData);
     };
 
     const mostrarAlerta = (mensagem: string) => {
@@ -204,11 +203,9 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
             }
         }
 
-        console.log("Proposta: ", proposta);
 
         try {
             const response = await post("createProposta", { proposta });
-            console.log("Resposta: ", response);
             if (response.status === 200) {
                 mostrarAlerta("Proposta enviada com sucesso! Acompanhe o status na aba de propostas.");
                 setShowModal(false);

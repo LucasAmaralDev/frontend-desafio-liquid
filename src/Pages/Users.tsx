@@ -11,7 +11,6 @@ const Users = () => {
     const getUsers = async () => {
 
         const response: any = await get('users')
-        console.log(response.data);
         setUsers(response.data.users);
     }
 
