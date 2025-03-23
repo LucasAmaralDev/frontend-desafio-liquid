@@ -43,6 +43,8 @@ interface AllData {
 
 export default function ModalProposta({ locationData }: { locationData: any }) {
     const [showModal, setShowModal] = useState(false);
+    const [alertaVisivel, setAlertaVisivel] = useState(false);
+    const [mensagemAlerta, setMensagemAlerta] = useState('');
 
     const [formData, setFormData] = useState({
         nome: '',
@@ -65,6 +67,14 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
         console.log(allData);
     };
 
+    const mostrarAlerta = (mensagem: string) => {
+        setMensagemAlerta(mensagem);
+        setAlertaVisivel(true);
+    };
+
+    const fecharAlerta = () => {
+        setAlertaVisivel(false);
+    };
 
     const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value;
@@ -132,6 +142,41 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        // Validação dos campos do formulário
+        if (!formData.nome) {
+            mostrarAlerta("Por favor, preencha o nome do cliente.");
+            return;
+        }
+        
+        if (!formData.cpf || formData.cpf.length < 14) {
+            mostrarAlerta("Por favor, preencha o CPF corretamente.");
+            return;
+        }
+        
+        if (!formData.email || !formData.email.includes('@')) {
+            mostrarAlerta("Por favor, preencha um email válido.");
+            return;
+        }
+        
+        if (!formData.telefone || formData.telefone.length < 14) {
+            mostrarAlerta("Por favor, preencha o telefone corretamente.");
+            return;
+        }
+        
+        if (!formData.renda) {
+            mostrarAlerta("Por favor, preencha a renda do cliente.");
+            return;
+        }
+        
+        if (!formData.entrada) {
+            mostrarAlerta("Por favor, preencha o valor de entrada.");
+            return;
+        }
+        
+        if (!formData.prazo) {
+            mostrarAlerta("Por favor, selecione o prazo de financiamento.");
+            return;
+        }
 
         const proposta = {
             imovelId: allData.id,
@@ -160,7 +205,7 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
         const response = await post("createProposta", { proposta });
         console.log("Resposta: ", response);
         if (response.status === 200) {
-            alert("Proposta enviada com sucesso! Acompanhe o status na aba de propostas.");
+            mostrarAlerta("Proposta enviada com sucesso! Acompanhe o status na aba de propostas.");
             setShowModal(false);
             setFormData({
                 nome: '',
@@ -172,7 +217,7 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
                 prazo: '',
             })
         } else {
-            alert("Erro ao enviar proposta. Por favor, tente novamente.");
+            mostrarAlerta("Erro ao enviar proposta. Por favor, tente novamente.");
         }
     }
 
@@ -355,6 +400,33 @@ export default function ModalProposta({ locationData }: { locationData: any }) {
                 )
             }
 
+            {alertaVisivel && (
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="absolute inset-0 bg-black opacity-50" onClick={fecharAlerta}></div>
+                    <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4 z-10 relative">
+                        <div className="flex items-start mb-4">
+                            <div className="flex-shrink-0 mr-3">
+                                <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-lg font-medium text-gray-900">Atenção</h3>
+                                <p className="mt-2 text-sm text-gray-500">{mensagemAlerta}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end">
+                            <button
+                                type="button"
+                                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
+                                onClick={fecharAlerta}
+                            >
+                                Entendi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
